@@ -1,48 +1,46 @@
-const mongoose = require('mongoose')
-const validator = require('validator')
+const mongoose = require("mongoose");
+const validator = require("validator");
 // const ProductType = require("../Modal/productTypeModel")
-const ProductSchema = mongoose.Schema({
-    name:{
-        type:String,
-        required: [true,"Please provide the username"],
-        unique: true
+const ProductSchema = mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, "Please provide the username"],
+      unique: true,
     },
-    price:{
-        type:Number,
-        required:[true,"Please provide Price Address"],
-    },
-    quantity:{
-        type:Number,
-        min : 1,
+    price: {
+      type: Number,
+      required: [true, "Please provide Price Address"],
     },
     productType: {
-        type: mongoose.Schema.ObjectId,
-        ref: 'ProductType',
-      },
-    timeStamp : {
-        type:Date,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ProductType",
     },
-    likes : {
-        type:Number,
-        default : 0,
+    likes: {
+      type: Boolean,
+      default: false,
     },
-    dislikes : {
-        type:Number,
-        default : 0,
+    dislikes: {
+      type: Number,
+      default: 0,
     },
-    comment : {
-        type: String,
-        default : 'No Comments'
+    comment: {
+      type: String,
+      default: "No Comments",
     },
-    photo : {
-        type: String,
-        default: "no photo"
-    }
-})
+    photo: {
+      type: String,
+      default: "no photo",
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
-ProductSchema.pre("save",function(next){
-    this.timeStamp  = Date.now();
-    next();
-})
+ProductSchema.pre("save", function (next) {
+  this.timeStamp = Date.now();
+  next();
+});
 
-module.exports = mongoose.model("Product",ProductSchema)  
+module.exports = mongoose.model("Product", ProductSchema);

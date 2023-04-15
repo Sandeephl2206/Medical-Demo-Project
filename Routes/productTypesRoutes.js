@@ -8,5 +8,9 @@ router
   .post(productTypeController.createProductType)
   .get(productTypeController.getAllProductType);
 // router.route("/:id").get(productTypeController.getProductById).patch(productTypeController.updateProductById).delete(productTypeController.deleteProduct)
+router.delete(
+  "/deleteProductType/:name",
+  productTypeController.deleteProductType
+);
 
 module.exports = router;

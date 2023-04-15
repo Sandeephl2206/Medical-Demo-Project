@@ -1,10 +1,10 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 
-const productTypeSchema = mongoose.Schema({
-  productType: {
-    type:String,
-    unique:[true,"Same Product-Type Already Exist"]
-  }
-})
+const productTypeSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    unique: [true, "Same Product-Type Already Exist"],
+  },
+});
 
-module.exports = mongoose.model("ProductType",productTypeSchema)  
+module.exports = new mongoose.model("ProductType", productTypeSchema);

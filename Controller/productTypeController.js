@@ -1,11 +1,12 @@
 const ProductType = require("../Modal/productTypeModel");
 const catchAsync = require("../utils/catchAync");
 const AppError = require("../Error-Handling/error");
+const Product = require("../Modal/ProductModel");
 const createProductType = catchAsync(async (req, res) => {
   const productType = await ProductType.create({
-    productType: req.body.productType,
+    name: req.body.name,
   });
-  console.log(ProductType);
+
   res.status(201).json({
     message: "Product Type created Successfully",
     data: productType,
@@ -14,12 +15,33 @@ const createProductType = catchAsync(async (req, res) => {
 
 const getAllProductType = catchAsync(async (req, res) => {
   const productType = await ProductType.find();
-  console.log(ProductType);
+  // console.log(productType);
   res.status(201).json({
     message: "All Product Types Displayed Successfully",
     data: productType,
   });
 });
+
+const deleteProductType = catchAsync(async (req, res, next) => {
+  console.log(req.params.name);
+  const productType = await ProductType.findOne({
+    name: req.params.name,
+  });
+  if (!productType) return next(new AppError("Product Type Does not exist"));
+  console.log(productType._id);
+  const products = await Product.find({ productType: productType._id });
+  console.log(products);
+  if (products.length > 0) {
+    return next(
+      new AppError("Product Type can't be deleted because it is in use")
+    );
+  } 
+  const product = await ProductType.findByIdAndDelete(productType._id);
+  res.status(201).json({
+    message: "Product Type is deleted successfully",
+  });
+});
+
 // const getProductbyProductType = catchAsync(async(req,res)=>{
 //     console.log(req.params)
 //     const product = await Product.find({Product_type:req.params.Product_type})
@@ -69,6 +91,7 @@ const getAllProductType = catchAsync(async (req, res) => {
 // })
 
 module.exports = {
+  deleteProductType,
   createProductType,
   getAllProductType,
 };

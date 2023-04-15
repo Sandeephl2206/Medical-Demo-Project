@@ -1,4 +1,5 @@
-eed to create Medical products.where user should be able to register and logic and create product types.and can create new products and with selected product types
+3:26 PM
+Need to create Medical products.where user should be able to register and logic and create product types.and can create new products and with selected product types
 and user can like and dislike product. and get most liked products.and recently registered products. and user can comment on products.
 need to add field s like expiry dates in product
 
@@ -12,8 +13,8 @@ create Medical product(With file upload, product image should be only image allo
 
 
 
-get Medical product by products types
-delete product types(if any product using that product type then product type should not be delete give proper message)
 
+delete product types(if any product using that product type then product type should not be delete give proper message)
+get most recent product
 get most liked product
 comment on product
