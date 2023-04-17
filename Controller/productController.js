@@ -1,30 +1,30 @@
-const Product = require("../Modal/ProductModel");
+const Product = require("../Model/ProductModel");
 const catchAsync = require("../utils/catchAync");
 const AppError = require("../Error-Handling/error");
-const ProductType = require("../Modal/productTypeModel");
+const ProductType = require("../Model/productTypeModel");
 
 const createProduct = catchAsync(async (req, res, next) => {
   const { name, price, productType } = req.body;
-  let typeID;
+  let producttypeID;
+  const producttype = await ProductType.findOne({ name: productType });
 
-  const typeP = await ProductType.findOne({ name: productType });
-  if (!typeP) {
+  if (!producttype) {
     return next(new AppError("ProductType does not exists", 404));
   } else {
-    typeID = typeP._id;
+    producttypeID = producttype._id;
   }
-  console.log(typeP);
 
   const product = await Product.create({
     name,
     price,
-    productType: typeID,
+    productType: producttypeID,
+    photo: req.file.filename,
   });
 
   if (product) {
     res.status(201).json({
+      Status: "Product Created Successfully",
       data: product,
-      message: "Product Created Successfully",
     });
   } else {
     return next(new AppError("Something went wrong", 500));
@@ -32,46 +32,47 @@ const createProduct = catchAsync(async (req, res, next) => {
 });
 
 const getAllProducts = catchAsync(async (req, res) => {
-  const products = await Product.find().populate("productType");
+  const products = await Product.find().populate({
+    path: "productType",
+    select: "name",
+  });
+
   if (!products) return next(new AppError("No Product to show", 404));
+
   res.status(201).json({
     data: products,
     message: "All Product Displayed Successfully",
   });
 });
 
-const getProductById = catchAsync(async (req, res, next) => {
-  console.log(req.params.id);
-  const products = await Product.findById(req.params.id).populate({
-    path: "productType",
-    select: "name",
-  });
-  if (!products)
-    return next(new AppError("No Product For the provided ID", 404));
-
-  res.status(201).json({
-    data: products,
-    message: "Successfully Executed",
-  });
-});
-
 const updateProductById = catchAsync(async (req, res, next) => {
-  console.log(req.params.id);
+  const id = req.params.id;
+  // if (id.length !== 24)
+  //   return next(new AppError("No Product For the provided ID", 401));
+
+  const products = await Product.findById(req.params.id);
+  // if (!products) return next(new AppError("Wrong ID"));
   const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
     runValidators: true,
   });
   if (!product) {
-    console.log("PRoducts", product);
+    console.log("Products", product);
     return next(new AppError("No Product For the provided ID", 401));
   }
+
   res.status(201).json({
-    data: product,
     message: "Successfully updated",
+    data: product,
   });
 });
 
 const deleteProduct = catchAsync(async (req, res) => {
+  const product = await Product.findById(req.params.id);
+
+  if (!product)
+    return next(new AppError("No Product For the provided ID", 401));
+
   await Product.findByIdAndDelete(req.params.id);
   res.status(201).json({
     data: null,
@@ -80,7 +81,7 @@ const deleteProduct = catchAsync(async (req, res) => {
 });
 
 const mostRecentProducts = catchAsync(async (req, res) => {
-  const mostRecetValue = await Product.find().sort({ timeStamp: -1 }).limit(1);
+  const mostRecetValue = await Product.find().sort({ timeStamps: -1 }).limit(1);
   console.log(mostRecetValue);
   res.status(201).json({
     message: "This is Most recent Products",
@@ -99,7 +100,7 @@ const getProductByProductType = catchAsync(async (req, res, next) => {
     return next(new AppError("No Product For the given ProductType", 000));
 
   res.status(201).json({
-    message: "This is Most recent Products",
+    message: "Success",
     data: products,
   });
 });
@@ -107,7 +108,6 @@ const getProductByProductType = catchAsync(async (req, res, next) => {
 module.exports = {
   createProduct,
   getAllProducts,
-  getProductById,
   updateProductById,
   deleteProduct,
   mostRecentProducts,

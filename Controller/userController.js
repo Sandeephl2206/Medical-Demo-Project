@@ -1,50 +1,65 @@
-const User = require("../Modal/UserModel");
+const User = require("../Model/UserModel");
 const sendEmail = require("../utils/email");
 const jwt = require("jsonwebtoken");
 const catchAync = require("../utils/catchAync");
+const AppError = require("../Error-Handling/error");
 require("dotenv").config();
 
 const registerUser = catchAync(async (req, res) => {
   const user = await User.create(req.body);
-  console.log(user);
 
   await sendEmail({
     email: user.email,
     subject: "Registered",
     message: `Your Email ID is ${user.email} and your Login Password is ${user.password}`,
   });
-  res.json({
-    result: "Success",
-    data: user,
-  });
+  if (user) {
+    res.json({
+      message: "Successfully register",
+      data: user,
+    });
+  } else {
+    return next(new AppError("Something went wrong", 500));
+  }
 });
 
 const getAllUser = async (req, res) => {
   const users = await User.find();
-  console.log(users);
-  res.json({
-    data: users,
-  });
+  if (!users) return next(new AppError("No User to Display", 500));
+  if (users) {
+    res.json({
+      message: "Successfully register",
+      data: users,
+    });
+  } else {
+    return next(new AppError("Something went wrong", 500));
+  }
 };
 
-const loginUser = async (req, res) => {
+const loginUser = async (req, res, next) => {
   let email = req.body.email;
   let password = req.body.password;
   if (!email || !password) {
-    throw new Error("Provide email and passowrd both");
+    return next(new AppError("Provide email and passowrd both", 500));
   }
+
   const UserInfo = await User.findOne({ email });
+  if (!UserInfo) return next(new AppError("Please Regiter First", 500));
+
   if (UserInfo.password != req.body.password) {
-    throw new Error("Wrong Password");
+    return next(new AppError("Wrong Password", 500));
   }
-  let UserID = UserInfo._id;
-  console.log(UserInfo);
+
   const token = jwt.sign({ id: UserInfo._id }, process.env.SECRET_KEY);
-  res.json({
-    result: "Success",
-    data: UserInfo,
-    token,
-  });
+  if (UserInfo) {
+    res.json({
+      message: "Successfully login",
+      data: UserInfo,
+      token,
+    });
+  } else {
+    return next(new AppError("Something went wrong", 500));
+  }
 };
 
 const protectingRoutes = async (req, res, next) => {
