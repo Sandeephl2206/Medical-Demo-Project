@@ -16,17 +16,16 @@ const ProductSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "ProductType",
     },
-    likes: {
+    // likes: {
+    //   type: Boolean,
+    //   default: false,
+    // },
+    dislikes: {
       type: Boolean,
       default: false,
     },
-    dislikes: {
-      type: Number,
-      default: 0,
-    },
     comment: {
       type: String,
-      default: "No Comments",
     },
     photo: {
       type: String,
@@ -34,13 +33,28 @@ const ProductSchema = mongoose.Schema(
     },
   },
   {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
     timestamps: true,
   }
 );
 
-ProductSchema.pre("save", function (next) {
-  this.timeStamp = Date.now();
-  next();
+ProductSchema.virtual("likes", {
+  ref: "Like",
+  localField: "_id",
+  foreignField: "productID",
 });
+
+// ProductSchema.virtual("dislikes", {
+//   ref: "DisLike",
+//   localField: "_id",
+//   foreignField: "productID",
+// });
+
+// ProductSchema.virtual("comments", {
+//   ref: "Comment",
+//   localField: "_id",
+//   foreignField: "productID",
+// });
 
 module.exports = mongoose.model("Product", ProductSchema);

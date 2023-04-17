@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const productTypeSchema = new mongoose.Schema({
   name: {
     type: String,
-    unique: [true, "Same Product-Type Already Exist"],
+    unique: [true, "Product-Type Already Exist"],
   },
 });
 

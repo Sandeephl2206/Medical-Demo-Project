@@ -22,16 +22,16 @@ router
   .get(productController.getProductByProductType);
 
 router
-  .route("/giveLike")
-  .post(
-    AuthController.protectingRoutes,
-    likeController.createaLike,
-    likeController.giveLike
-  );
+  .route("/giveLike/:id")
+  .get( AuthController.protectingRoutes,likeController.LikedProduct);
 
 router
-  .route("/giveComment")
-  .post(AuthController.protectingRoutes, commentController.giveComment);
-router.route("/getAllComments").get(commentController.getAllComments);
+  .route("/dislike/:id")
+  .get( likeController.disLikedProduct);
+
+router
+  .route("/giveComment/:id")
+  .post(commentController.comment);
+// router.route("/getAllComments").get(commentController.getAllComments);
 
 module.exports = router;
