@@ -33,22 +33,6 @@ ProductSchema.pre("save", function (next) {
   this.timeStamps = Date.now();
   next();
 });
-// ProductSchema.virtual("likes", {
-//   ref: "Like",
-//   localField: "_id",
-//   foreignField: "productID",
-// });
 
-// ProductSchema.virtual("dislikes", {
-//   ref: "DisLike",
-//   localField: "_id",
-//   foreignField: "productID",
-// });
-
-// ProductSchema.virtual("comments", {
-//   ref: "Comment",
-//   localField: "_id",
-//   foreignField: "productID",
-// });
 
 module.exports = mongoose.model("Product", ProductSchema);

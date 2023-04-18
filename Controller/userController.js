@@ -3,20 +3,29 @@ const sendEmail = require("../utils/email");
 const jwt = require("jsonwebtoken");
 const catchAync = require("../utils/catchAync");
 const AppError = require("../Error-Handling/error");
+const bcrypt = require("bcrypt");
 require("dotenv").config();
 
-const registerUser = catchAync(async (req, res) => {
-  const user = await User.create(req.body);
+const registerUser = catchAync(async (req, res, next) => {
+  const { email, password, confirmPassword, name } = req.body;
+  if (!email || !password || !confirmPassword || !name) {
+    return next(new AppError("Provide All the Requied Details", 401));
+  }
 
-  await sendEmail({
-    email: user.email,
-    subject: "Registered",
-    message: `Your Email ID is ${user.email} and your Login Password is ${user.password}`,
-  });
+  if (name.split(" ").length > 3) {
+    return next(new AppError("Please Avoid Spaces", 401));
+  }
+  if (password.includes(" ") || email.includes(" "))
+    return next(new AppError("Please Avoid Spaces", 401));
+
+  const userFind = await User.findOne({ email });
+  if (userFind) return next(new AppError("This Email is Already registered"));
+
+  const user = await User.create(req.body);
   if (user) {
     res.json({
       message: "Successfully register",
-      data: user,
+      data: { name: user.name, email: user.email },
     });
   } else {
     return next(new AppError("Something went wrong", 500));
@@ -25,7 +34,7 @@ const registerUser = catchAync(async (req, res) => {
 
 const getAllUser = async (req, res) => {
   const users = await User.find();
-  if (!users) return next(new AppError("No User to Display", 500));
+  if (!users) return next(new AppError("No User to Display", 404));
   if (users) {
     res.json({
       message: "Successfully register",
@@ -40,21 +49,21 @@ const loginUser = async (req, res, next) => {
   let email = req.body.email;
   let password = req.body.password;
   if (!email || !password) {
-    return next(new AppError("Provide email and passowrd both", 500));
+    return next(new AppError("Provide email and password both", 401));
   }
 
   const UserInfo = await User.findOne({ email });
-  if (!UserInfo) return next(new AppError("Please Regiter First", 500));
+  if (!UserInfo) return next(new AppError("Please Register First", 401));
 
-  if (UserInfo.password != req.body.password) {
-    return next(new AppError("Wrong Password", 500));
-  }
+  const PasswordChecking = await bcrypt.compare(password, UserInfo.password);
+  if (!PasswordChecking)
+    return next(new AppError("Please provide Correct Password", 401));
 
   const token = jwt.sign({ id: UserInfo._id }, process.env.SECRET_KEY);
   if (UserInfo) {
     res.json({
       message: "Successfully login",
-      data: UserInfo,
+      data: { name: UserInfo.name, email: UserInfo.email },
       token,
     });
   } else {
@@ -62,29 +71,8 @@ const loginUser = async (req, res, next) => {
   }
 };
 
-const protectingRoutes = async (req, res, next) => {
-  const token = req.headers.authorization.split(" ");
-  const jwtToken = token[1].toString();
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
-    if (!token) {
-      return next(new AppError("you are Logged Out", 401));
-    }
-  }
-  console.log("Token", jwtToken);
-  const verification = jwt.verify(jwtToken, process.env.SECRET_KEY);
-  console.log(verification);
-  const freshuser = await User.findById(verification.id);
-  console.log("Product is protected");
-  console.log(freshuser);
-  req.user = freshuser;
-  next();
-};
 module.exports = {
   registerUser,
   getAllUser,
   loginUser,
-  protectingRoutes,
 };

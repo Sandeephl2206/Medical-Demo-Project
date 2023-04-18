@@ -13,9 +13,8 @@ app.use(express.json())
 app.use("/users",UserRoutes)
 app.use("/products",ProductRoute)
 app.use("/productTypes",ProductTypeRoute)
+
 app.all('*',(req,res,next)=>{
-    // res.status(404).json({
-    // status:'fail',
     return next(new AppError(`this URL is NOT running on this server ${req.originalUrl}`))
 });
 app.use(globalerrorHandler)

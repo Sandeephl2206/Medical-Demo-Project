@@ -35,4 +35,5 @@ router
   .route("/giveComment/:id")
   .post(AuthController.protectingRoutes, commentController.comment);
 
+router.get("/showLike/:id", likeController.showlike);
 module.exports = router;

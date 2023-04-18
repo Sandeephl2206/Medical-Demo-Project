@@ -5,6 +5,12 @@ const ProductType = require("../Model/productTypeModel");
 
 const createProduct = catchAsync(async (req, res, next) => {
   const { name, price, productType } = req.body;
+
+  const productFind = await Product.find({ name: req.body.name });
+
+  if (productFind.length > 0)
+    return next(new AppError("This Product is Already Exist"));
+
   let producttypeID;
   const producttype = await ProductType.findOne({ name: productType });
 
@@ -39,7 +45,7 @@ const getAllProducts = catchAsync(async (req, res) => {
 
   if (!products) return next(new AppError("No Product to show", 404));
 
-  res.status(201).json({
+  res.status(200).json({
     data: products,
     message: "All Product Displayed Successfully",
   });
@@ -47,46 +53,47 @@ const getAllProducts = catchAsync(async (req, res) => {
 
 const updateProductById = catchAsync(async (req, res, next) => {
   const id = req.params.id;
-  // if (id.length !== 24)
-  //   return next(new AppError("No Product For the provided ID", 401));
+  if (!id) return next(new AppError("Id Does is not given", 400));
 
   const products = await Product.findById(req.params.id);
-  // if (!products) return next(new AppError("Wrong ID"));
+  if (!products) {
+    return next(new AppError("No Product For the provided ID", 404));
+  }
+
   const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
     runValidators: true,
   });
-  if (!product) {
-    console.log("Products", product);
-    return next(new AppError("No Product For the provided ID", 401));
-  }
 
-  res.status(201).json({
+  res.status(200).json({
     message: "Successfully updated",
     data: product,
   });
 });
 
-const deleteProduct = catchAsync(async (req, res) => {
+const deleteProduct = catchAsync(async (req, res, next) => {
   const product = await Product.findById(req.params.id);
 
   if (!product)
-    return next(new AppError("No Product For the provided ID", 401));
+    return next(new AppError("No Product For the provided ID", 404));
 
   await Product.findByIdAndDelete(req.params.id);
-  res.status(201).json({
-    data: null,
+  res.status(200).json({
     message: "Successfully Deleted",
+    data: null,
   });
 });
 
-const mostRecentProducts = catchAsync(async (req, res) => {
+const mostRecentProducts = catchAsync(async (req, res, next) => {
   const mostRecetValue = await Product.find().sort({ timeStamps: -1 }).limit(1);
-  console.log(mostRecetValue);
-  res.status(201).json({
-    message: "This is Most recent Products",
-    data: mostRecetValue,
-  });
+  if (mostRecetValue) {
+    res.status(200).json({
+      message: "This is Most recent Products",
+      data: mostRecetValue,
+    });
+  } else {
+    return next(new AppError("Something went wrong", 500));
+  }
 });
 
 const getProductByProductType = catchAsync(async (req, res, next) => {
@@ -94,12 +101,12 @@ const getProductByProductType = catchAsync(async (req, res, next) => {
     name: req.params.name,
   });
   if (!productType)
-    return next(new AppError("No Product For the given ProductType", 000));
+    return next(new AppError("No Product For the given ProductType", 404));
   const products = await Product.find({ productType: productType.id });
   if (!products)
-    return next(new AppError("No Product For the given ProductType", 000));
+    return next(new AppError("No Product For the given ProductType", 404));
 
-  res.status(201).json({
+  res.status(200).json({
     message: "Success",
     data: products,
   });

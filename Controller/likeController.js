@@ -9,17 +9,15 @@ const Dislike = require("../Model/dislikeModel");
 const LikedProduct = catchAsync(async (req, res, next) => {
   const id = req.params.id;
   const product = await Product.findById(id);
-  if (!product) return next(new AppError("Product does not exists", 403));
-  console.log(product.id, req.user.id);
+  if (!product) return next(new AppError("Product does not exists", 404));
 
   const existingLike = await Like.findOne({
     userID: req.user.id,
     productID: product.id,
   });
-  console.log("ëxistingLike", existingLike);
 
   if (existingLike) {
-    return next(new AppError("You have already liked the product", 500));
+    return next(new AppError("You have already liked the product", 400));
   }
 
   const addLike = await Like.create({
@@ -31,10 +29,9 @@ const LikedProduct = catchAsync(async (req, res, next) => {
     userID: req.user.id,
     productID: product.id,
   })
-    .populate("productID")
-    .populate("userID");
+    .populate({ path: "productID", select: "name" })
+    .populate({ path: "userID", select: "name" });
 
-  console.log(addLike);
   if (addLike) {
     // deleting dislike
     await Dislike.findOneAndDelete({
@@ -54,8 +51,7 @@ const LikedProduct = catchAsync(async (req, res, next) => {
 const disLikedProduct = catchAsync(async (req, res, next) => {
   const id = req.params.id;
   const product = await Product.findById(id);
-  if (!product) return next(new AppError("Product does not exists", 403));
-  console.log(product.id, req.user.id);
+  if (!product) return next(new AppError("Product does not exists", 404));
 
   const existingDisLike = await Dislike.findOne({
     userID: req.user.id,
@@ -64,7 +60,7 @@ const disLikedProduct = catchAsync(async (req, res, next) => {
   console.log("existingDisLike", existingDisLike);
 
   if (existingDisLike) {
-    return next(new AppError("You have already Disliked the product", 500));
+    return next(new AppError("You have already Disliked the product", 400));
   }
 
   const addDisLike = await Dislike.create({
@@ -76,10 +72,9 @@ const disLikedProduct = catchAsync(async (req, res, next) => {
     userID: req.user.id,
     productID: product.id,
   })
-    .populate("productID")
-    .populate("userID");
+    .populate({ path: "productID", select: "name" })
+    .populate({ path: "userID", select: "name" });
 
-  console.log(showDisLike);
   if (addDisLike) {
     // deleting dislike
     await Like.findOneAndDelete({
@@ -115,13 +110,23 @@ const mostLikedProducts = async (req, res, next) => {
   const id = maxValue[0];
   const MostLiked = await Product.findById(id);
   res.json({
-    message: "Most Recent Product",
+    message: "Most Liked Product is --",
     data: MostLiked,
   });
 };
 
+const showlike = async (req, res) => {
+  const id = req.params.id;
+  const Show = await Like.find({ _id: id });
+  // const count = await Like.aggregate([{ count: { $sum: 1 } }]);
+  console.log(count);
+  res.json({
+    data: Show,
+  });
+};
 module.exports = {
   LikedProduct,
   mostLikedProducts,
   disLikedProduct,
+  showlike,
 };
