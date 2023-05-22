@@ -5,7 +5,7 @@ const sendEmail = require("../utils/email");
 const UserSchema = mongoose.Schema({
   name: {
     type: String,
-    required: [true, "Please provide the username"],
+    // required: [true, "Please provide the username"],
     unique: true,
   },
   email: {
@@ -25,9 +25,12 @@ const UserSchema = mongoose.Schema({
       "Password Must Contain Atleast one upperCase alphabet,Atleast One LowerCase Alphabet,and Atleast 1 Special Character",
     ],
   },
+  photo: {
+    type: String,
+  },
   confirmPassword: {
     type: String,
-    required: true,
+    // required: true,
     minlength: 8,
     validate: {
       validator: function (el) {
@@ -37,14 +40,15 @@ const UserSchema = mongoose.Schema({
     },
   },
 });
-UserSchema.pre("save", async function (next) {
-  await sendEmail({
-    email: this.email,
-    subject: "Registered",
-    message: `Your Email ID is ${this.email} and your Login Password is ${this.password}`,
-  });
-  next();
-});
+
+// UserSchema.pre("save", async function (next) {
+//   await sendEmail({
+//     email: this.email,
+//     subject: "Registered",
+//     message: `Your Email ID is ${this.email} and your Login Password is ${this.password}`,
+//   });
+//   next();
+// });
 
 UserSchema.pre("save", async function (next) {
   this.password = await bcrypt.hash(this.password, 12);

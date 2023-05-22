@@ -11,6 +11,7 @@ router
   .post(upload.uploadUserPhoto, productController.createProduct)
   .get(productController.getAllProducts);
 
+
 router.route("/recentProduct").get(productController.mostRecentProducts);
 router.route("/mostLikedProducts").get(likeController.mostLikedProducts);
 

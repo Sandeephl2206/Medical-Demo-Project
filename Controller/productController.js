@@ -5,7 +5,7 @@ const ProductType = require("../Model/productTypeModel");
 
 const createProduct = catchAsync(async (req, res, next) => {
   const { name, price, productType } = req.body;
-
+  console.log(req.file);
   const productFind = await Product.find({ name: req.body.name });
 
   if (productFind.length > 0)
